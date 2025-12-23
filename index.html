@@ -10,52 +10,65 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-    }
-    .screen { display: none; min-height: 100vh; padding: 16px; }
-    .active { display: block; }
+    body { margin:0; font-family:Arial,sans-serif; background:#f2f2f2; }
+    .screen { display:none; min-height:100vh; padding:16px; }
+    .active { display:block; }
 
     .dialog {
-      max-width: 360px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: center;
+      max-width:340px;
+      margin:80px auto;
+      background:#fff;
+      padding:24px;
+      border-radius:14px;
+      box-shadow:0 6px 16px rgba(0,0,0,.15);
+      text-align:center;
     }
 
     input, button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-top: 12px;
+      width:100%;
+      padding:12px;
+      font-size:16px;
+      margin-top:12px;
     }
 
     button {
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: white;
+      border:none;
+      border-radius:10px;
+      background:#007bff;
+      color:white;
     }
 
     .panel {
-      background: white;
-      padding: 14px;
-      border-radius: 10px;
-      margin-bottom: 16px;
+      background:white;
+      padding:14px;
+      border-radius:12px;
+      margin-bottom:14px;
     }
 
-    .choice { margin-top: 10px; }
-
-    .score {
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 12px;
+    .user-row {
+      display:flex;
+      justify-content:space-between;
+      font-size:14px;
+      margin-top:4px;
     }
+
+    .score { font-weight:bold; text-align:center; margin-bottom:10px; }
+
+    .progress {
+      height:10px;
+      background:#ddd;
+      border-radius:6px;
+      overflow:hidden;
+      margin-bottom:12px;
+    }
+    .progress-bar {
+      height:100%;
+      width:0%;
+      background:#28a745;
+      transition:width .3s;
+    }
+
+    .choice { margin-top:10px; }
   </style>
 </head>
 <body>
@@ -63,9 +76,10 @@
 <!-- SCREEN 1 -->
 <div id="screen1" class="screen active">
   <div class="dialog">
-    <h2>Enter Your Name</h2>
+    <h2>Welcome</h2>
+    <p>Please enter your name</p>
     <input id="username" placeholder="Your name" />
-    <button onclick="enterApp()">Continue</button>
+    <button onclick="enterApp()">Start Quiz</button>
   </div>
 </div>
 
@@ -74,66 +88,84 @@
 
   <div class="panel">
     <strong>Current Users</strong>
-    <ul id="userList"></ul>
+    <div id="userList"></div>
   </div>
 
   <div class="score" id="scoreDisplay">Score: 0/0</div>
+  <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
 
   <div id="questionPanel" class="panel"></div>
 
   <div class="panel">
-    <strong>Correct Answers Submitted By</strong>
+    <strong>Users With Correct Answers</strong>
     <ul id="winnerList"></ul>
   </div>
-
 </div>
 
 <script>
-  // 🔴 REPLACE WITH YOUR FIREBASE CONFIG
-  const firebaseConfig = {
-    apiKey: "AIzaSyAYylkF10iLxdLh0l2bezBfGQqTXeZ0y7o",
-    authDomain: "erc2025quiz.firebaseapp.com",
-    databaseURL: "https://erc2025quiz-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "erc2025quiz",
-    storageBucket: "erc2025quiz.firebasestorage.app",
-    messagingSenderId: "979651276106",
-    appId: "1:979651276106:web:cf5c56ad87f559b2f765b3",
-    measurementId: "G-Y33C1Z2YQR"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAYylkF10iLxdLh0l2bezBfGQqTXeZ0y7o",
+  authDomain: "erc2025quiz.firebaseapp.com",
+  databaseURL: "https://erc2025quiz-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "erc2025quiz",
+  storageBucket: "erc2025quiz.firebasestorage.app",
+  messagingSenderId: "979651276106",
+  appId: "1:979651276106:web:cf5c56ad87f559b2f765b3",
+  measurementId: "G-Y33C1Z2YQR"
+};
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
   const usersRef = db.ref('users');
   const winnersRef = db.ref('winners');
 
+  let userKey = null;
   let currentUser = '';
   let currentQuestionIndex = 0;
   let answeredCount = 0;
   let correctCount = 0;
+  let hasWon = false;
+
+  const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
 
   const questions = [
-    { q: 'Which country assumed the G20 presidency in January 2025?', choices: ['Brazil', 'South Africa', 'India'], answer: 1 },
-    { q: 'Which global astronomy awareness event took place in February 2025?', choices: ['World Space Week', 'National Astronomy Week', 'Global Star Party'], answer: 1 },
-    { q: 'What major space event occurred on 2 March 2025?', choices: ['First private Moon landing', 'Mars rover launch', 'ISS deorbit'], answer: 0 },
-    { q: 'Which meteor shower peaked in April 2025?', choices: ['Perseids', 'Geminids', 'Lyrids'], answer: 2 },
-    { q: 'Which song competition was held in May 2025?', choices: ['Eurovision Song Contest', 'American Idol Finale', 'MTV Awards'], answer: 0 },
-    { q: 'Which international sporting event took place in June 2025?', choices: ['UEFA Women’s Euro', 'Summer Olympics', 'Cricket World Cup'], answer: 0 },
-    { q: 'Which global climate event occurred in July 2025?', choices: ['Record Arctic ice melt', 'El Niño collapse', 'Antarctic heatwave'], answer: 0 },
-    { q: 'Wikimania 2025 was held in which month?', choices: ['July', 'August', 'September'], answer: 1 },
-    { q: 'What rare astronomical event occurred in September 2025?', choices: ['Total lunar eclipse', 'Solar flare blackout', 'Meteor impact'], answer: 0 },
-    { q: 'Which meteor shower peaked in October 2025?', choices: ['Draconids', 'Leonids', 'Quadrantids'], answer: 0 },
-    { q: 'Which major climate summit occurred in November 2025?', choices: ['COP30', 'COP29', 'UN Ocean Summit'], answer: 0 },
-    { q: 'Which famous author’s 250th birthday was celebrated in December 2025?', choices: ['Charles Dickens', 'Jane Austen', 'Leo Tolstoy'], answer: 1 }
+    { q:'Which country assumed the G20 presidency in January 2025?', choices:['Brazil','South Africa','India'], answer:1 },
+    { q:'Which global astronomy awareness event took place in February 2025?', choices:['World Space Week','National Astronomy Week','Global Star Party'], answer:1 },
+    { q:'What major space event occurred on 2 March 2025?', choices:['First private Moon landing','Mars rover launch','ISS deorbit'], answer:0 },
+    { q:'Which meteor shower peaked in April 2025?', choices:['Perseids','Geminids','Lyrids'], answer:2 },
+    { q:'Which song competition was held in May 2025?', choices:['Eurovision Song Contest','American Idol Finale','MTV Awards'], answer:0 },
+    { q:'Which international sporting event took place in June 2025?', choices:['UEFA Women’s Euro','Summer Olympics','Cricket World Cup'], answer:0 },
+    { q:'Which global climate event occurred in July 2025?', choices:['Record Arctic ice melt','El Niño collapse','Antarctic heatwave'], answer:0 },
+    { q:'Wikimania 2025 was held in which month?', choices:['July','August','September'], answer:1 },
+    { q:'What rare astronomical event occurred in September 2025?', choices:['Total lunar eclipse','Solar flare blackout','Meteor impact'], answer:0 },
+    { q:'Which meteor shower peaked in October 2025?', choices:['Draconids','Leonids','Quadrantids'], answer:0 },
+    { q:'Which major climate summit occurred in November 2025?', choices:['COP30','COP29','UN Ocean Summit'], answer:0 },
+    { q:'Which famous author’s 250th birthday was celebrated in December 2025?', choices:['Charles Dickens','Jane Austen','Leo Tolstoy'], answer:1 }
   ];
 
   function enterApp() {
     const name = document.getElementById('username').value.trim();
     if (!name) return;
+
     currentUser = name;
-    usersRef.push(name);
+    userKey = usersRef.push({ name, score:'0/0', lastActive:Date.now() }).key;
+
+    usersRef.child(userKey).onDisconnect().remove();
+
     document.getElementById('screen1').classList.remove('active');
     document.getElementById('screen2').classList.add('active');
+
     showQuestion();
+    startHeartbeat();
+  }
+
+  function startHeartbeat() {
+    setInterval(() => {
+      if (userKey) {
+        usersRef.child(userKey).update({ lastActive: Date.now(), score: `${correctCount}/${answeredCount}` });
+      }
+    }, 30000);
   }
 
   function showQuestion() {
@@ -146,25 +178,30 @@
     }
 
     const q = questions[currentQuestionIndex];
-    const title = document.createElement('div');
-    title.innerHTML = `<strong>Question ${currentQuestionIndex + 1} of ${questions.length}</strong><br>${q.q}`;
-    panel.appendChild(title);
+    panel.innerHTML = `<strong>Question ${currentQuestionIndex + 1} of ${questions.length}</strong><br>${q.q}`;
 
-    q.choices.forEach((c, i) => {
+    q.choices.forEach((c,i) => {
       const btn = document.createElement('button');
       btn.className = 'choice';
       btn.textContent = c;
       btn.onclick = () => answerQuestion(i);
       panel.appendChild(btn);
     });
+
+    updateProgress();
   }
 
   function answerQuestion(choiceIndex) {
     answeredCount++;
+
     if (choiceIndex === questions[currentQuestionIndex].answer) {
       correctCount++;
-      winnersRef.push(currentUser);
+      if (!hasWon) {
+        winnersRef.child(currentUser).set(true);
+        hasWon = true;
+      }
     }
+
     updateScore();
     currentQuestionIndex++;
     showQuestion();
@@ -172,15 +209,29 @@
 
   function updateScore() {
     document.getElementById('scoreDisplay').textContent = `Score: ${correctCount}/${answeredCount}`;
+    if (userKey) usersRef.child(userKey).update({ score: `${correctCount}/${answeredCount}` });
+  }
+
+  function updateProgress() {
+    const percent = (currentQuestionIndex / questions.length) * 100;
+    document.getElementById('progressBar').style.width = percent + '%';
   }
 
   usersRef.on('value', snap => {
-    const ul = document.getElementById('userList');
-    ul.innerHTML = '';
+    const list = document.getElementById('userList');
+    list.innerHTML = '';
+    const now = Date.now();
+
     snap.forEach(c => {
-      const li = document.createElement('li');
-      li.textContent = c.val();
-      ul.appendChild(li);
+      const u = c.val();
+      if (now - u.lastActive > INACTIVITY_LIMIT) {
+        usersRef.child(c.key).remove();
+      } else {
+        const div = document.createElement('div');
+        div.className = 'user-row';
+        div.innerHTML = `<span>${u.name}</span><span>${u.score}</span>`;
+        list.appendChild(div);
+      }
     });
   });
 
@@ -189,7 +240,7 @@
     ul.innerHTML = '';
     snap.forEach(c => {
       const li = document.createElement('li');
-      li.textContent = c.val();
+      li.textContent = c.key;
       ul.appendChild(li);
     });
   });
