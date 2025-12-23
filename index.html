@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2025 Events Quiz</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+    }
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .active { display: block; }
+    .dialog {
+      max-width: 360px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: white;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .question {
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .choice {
+      margin-top: 8px;
+    }
+    .users, .winners {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SCREEN 1 -->
+<div id="screen1" class="screen active">
+  <div class="dialog">
+    <h2>Enter Your Name</h2>
+    <input id="username" placeholder="Your name" />
+    <button onclick="enterApp()">Continue</button>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div id="screen2" class="screen">
+
+  <div class="users">
+    <strong>Current Users</strong>
+    <ul id="userList"></ul>
+  </div>
+
+  <div id="questions"></div>
+
+  <div class="winners">
+    <strong>Correct Answers Submitted By:</strong>
+    <ul id="winnerList"></ul>
+  </div>
+</div>
+
+<script>
+  // FIREBASE CONFIG ADDED
+  const firebaseConfig = {
+    apiKey: "AIzaSyAYylkF10iLxdLh0l2bezBfGQqTXeZ0y7o",
+    authDomain: "erc2025quiz.firebaseapp.com",
+    databaseURL: "https://erc2025quiz-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "erc2025quiz",
+    storageBucket: "erc2025quiz.firebasestorage.app",
+    messagingSenderId: "979651276106",
+    appId: "1:979651276106:web:cf5c56ad87f559b2f765b3",
+    measurementId: "G-Y33C1Z2YQR"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const usersRef = db.ref('users');
+  const winnersRef = db.ref('winners');
+
+  let currentUser = '';
+
+  const questions = [
+    { month: 'January', q: 'Which country assumed the G20 presidency in January 2025?', choices: ['Brazil', 'South Africa', 'India'], answer: 1 },
+    { month: 'February', q: 'Which global astronomy awareness event took place in February 2025?', choices: ['World Space Week', 'National Astronomy Week', 'Global Star Party'], answer: 1 },
+    { month: 'March', q: 'What major space event occurred on 2 March 2025?', choices: ['First private Moon landing', 'Mars rover launch', 'ISS deorbit'], answer: 0 },
+    { month: 'April', q: 'Which meteor shower peaked in April 2025?', choices: ['Perseids', 'Geminids', 'Lyrids'], answer: 2 },
+    { month: 'May', q: 'Which song competition was held in May 2025?', choices: ['Eurovision Song Contest', 'American Idol Finale', 'MTV Awards'], answer: 0 },
+    { month: 'June', q: 'Which international sporting event took place in June 2025?', choices: ['UEFA Women’s Euro', 'Summer Olympics', 'Cricket World Cup'], answer: 0 },
+    { month: 'July', q: 'Which global climate event occurred in July 2025?', choices: ['Record Arctic ice melt', 'El Niño collapse', 'Antarctic heatwave'], answer: 0 },
+    { month: 'August', q: 'Wikimania 2025 was held in which month?', choices: ['July', 'August', 'September'], answer: 1 },
+    { month: 'September', q: 'What rare astronomical event occurred in September 2025?', choices: ['Total lunar eclipse', 'Solar flare blackout', 'Meteor impact'], answer: 0 },
+    { month: 'October', q: 'Which meteor shower peaked in October 2025?', choices: ['Draconids', 'Leonids', 'Quadrantids'], answer: 0 },
+    { month: 'November', q: 'Which major climate summit occurred in November 2025?', choices: ['COP30', 'COP29', 'UN Ocean Summit'], answer: 0 },
+    { month: 'December', q: 'Which famous author’s 250th birthday was celebrated in December 2025?', choices: ['Charles Dickens', 'Jane Austen', 'Leo Tolstoy'], answer: 1 }
+  ];
+
+  function enterApp() {
+    const name = document.getElementById('username').value.trim();
+    if (!name) return;
+    currentUser = name;
+    usersRef.push(name);
+    document.getElementById('screen1').classList.remove('active');
+    document.getElementById('screen2').classList.add('active');
+    renderQuestions();
+  }
+
+  function renderQuestions() {
+    const container = document.getElementById('questions');
+    questions.forEach((q, qi) => {
+      const div = document.createElement('div');
+      div.className = 'question';
+      div.innerHTML = `<strong>${q.month}:</strong> ${q.q}`;
+      q.choices.forEach((c, ci) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.textContent = c;
+        btn.onclick = () => submitAnswer(qi, ci);
+        div.appendChild(btn);
+      });
+      container.appendChild(div);
+    });
+  }
+
+  function submitAnswer(qi, ci) {
+    if (ci === questions[qi].answer) {
+      winnersRef.push(currentUser);
+      alert('Correct!');
+    } else {
+      alert('Incorrect');
+    }
+  }
+
+  usersRef.on('value', snap => {
+    const ul = document.getElementById('userList');
+    ul.innerHTML = '';
+    snap.forEach(c => {
+      const li = document.createElement('li');
+      li.textContent = c.val();
+      ul.appendChild(li);
+    });
+  });
+
+  winnersRef.on('value', snap => {
+    const ul = document.getElementById('winnerList');
+    ul.innerHTML = '';
+    snap.forEach(c => {
+      const li = document.createElement('li');
+      li.textContent = c.val();
+      ul.appendChild(li);
+    });
+  });
+</script>
+
+</body>
+</html>
