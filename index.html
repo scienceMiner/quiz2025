@@ -279,10 +279,14 @@ const firebaseConfig = {
     snap.forEach(c => {
       const u = c.val();
       if (!u || !u.name || !u.score) return;
-      if (now - u.lastActive > INACTIVITY_LIMIT) {
-        usersRef.child(c.key).remove();
-        return;
-      }
+
+      // Remove inactive users and their winner entry
+    if (now - u.lastActive > INACTIVITY_LIMIT) {
+      usersRef.child(c.key).remove();
+      winnersRef.child(u.name).remove();  // <-- REMOVE winner for inactive user
+      return;
+    }
+    
       const div = document.createElement('div');
       div.className = 'user-row';
       div.innerHTML = `<span>${u.name}</span><span>${u.score}</span>`;
