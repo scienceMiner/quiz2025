@@ -1,2 +1,11 @@
-test1
-test2
+// FIREBASE CONFIG ADDED - never do this
+const firebaseConfig = {
+  apiKey: "AIzaSyAYylkF10iLxdLh0l2bezBfGQqTXeZ0y7o",
+  authDomain: "erc2025quiz.firebaseapp.com",
+  databaseURL: "https://erc2025quiz-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "erc2025quiz",
+  storageBucket: "erc2025quiz.firebasestorage.app",
+  messagingSenderId: "979651276106",
+  appId: "1:979651276106:web:cf5c56ad87f559b2f765b3",
+  measurementId: "G-Y33C1Z2YQR"
+}

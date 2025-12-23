@@ -15,12 +15,9 @@
       font-family: Arial, sans-serif;
       background: #f2f2f2;
     }
-    .screen {
-      display: none;
-      min-height: 100vh;
-      padding: 16px;
-    }
+    .screen { display: none; min-height: 100vh; padding: 16px; }
     .active { display: block; }
+
     .dialog {
       max-width: 360px;
       margin: 40px auto;
@@ -30,36 +27,34 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: center;
     }
-    button {
+
+    input, button {
       width: 100%;
       padding: 12px;
-      margin-top: 12px;
       font-size: 16px;
+      margin-top: 12px;
+    }
+
+    button {
       border: none;
       border-radius: 8px;
       background: #007bff;
       color: white;
     }
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    .question {
+
+    .panel {
       background: white;
       padding: 14px;
       border-radius: 10px;
       margin-bottom: 16px;
     }
-    .choice {
-      margin-top: 8px;
-    }
-    .users, .winners {
-      background: white;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 16px;
+
+    .choice { margin-top: 10px; }
+
+    .score {
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 12px;
     }
   </style>
 </head>
@@ -77,21 +72,24 @@
 <!-- SCREEN 2 -->
 <div id="screen2" class="screen">
 
-  <div class="users">
+  <div class="panel">
     <strong>Current Users</strong>
     <ul id="userList"></ul>
   </div>
 
-  <div id="questions"></div>
+  <div class="score" id="scoreDisplay">Score: 0/0</div>
 
-  <div class="winners">
-    <strong>Correct Answers Submitted By:</strong>
+  <div id="questionPanel" class="panel"></div>
+
+  <div class="panel">
+    <strong>Correct Answers Submitted By</strong>
     <ul id="winnerList"></ul>
   </div>
+
 </div>
 
 <script>
-  // FIREBASE CONFIG ADDED
+  // 🔴 REPLACE WITH YOUR FIREBASE CONFIG
   const firebaseConfig = {
     apiKey: "AIzaSyAYylkF10iLxdLh0l2bezBfGQqTXeZ0y7o",
     authDomain: "erc2025quiz.firebaseapp.com",
@@ -101,7 +99,7 @@
     messagingSenderId: "979651276106",
     appId: "1:979651276106:web:cf5c56ad87f559b2f765b3",
     measurementId: "G-Y33C1Z2YQR"
-};
+  };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
@@ -109,20 +107,23 @@
   const winnersRef = db.ref('winners');
 
   let currentUser = '';
+  let currentQuestionIndex = 0;
+  let answeredCount = 0;
+  let correctCount = 0;
 
   const questions = [
-    { month: 'January', q: 'Which country assumed the G20 presidency in January 2025?', choices: ['Brazil', 'South Africa', 'India'], answer: 1 },
-    { month: 'February', q: 'Which global astronomy awareness event took place in February 2025?', choices: ['World Space Week', 'National Astronomy Week', 'Global Star Party'], answer: 1 },
-    { month: 'March', q: 'What major space event occurred on 2 March 2025?', choices: ['First private Moon landing', 'Mars rover launch', 'ISS deorbit'], answer: 0 },
-    { month: 'April', q: 'Which meteor shower peaked in April 2025?', choices: ['Perseids', 'Geminids', 'Lyrids'], answer: 2 },
-    { month: 'May', q: 'Which song competition was held in May 2025?', choices: ['Eurovision Song Contest', 'American Idol Finale', 'MTV Awards'], answer: 0 },
-    { month: 'June', q: 'Which international sporting event took place in June 2025?', choices: ['UEFA Women’s Euro', 'Summer Olympics', 'Cricket World Cup'], answer: 0 },
-    { month: 'July', q: 'Which global climate event occurred in July 2025?', choices: ['Record Arctic ice melt', 'El Niño collapse', 'Antarctic heatwave'], answer: 0 },
-    { month: 'August', q: 'Wikimania 2025 was held in which month?', choices: ['July', 'August', 'September'], answer: 1 },
-    { month: 'September', q: 'What rare astronomical event occurred in September 2025?', choices: ['Total lunar eclipse', 'Solar flare blackout', 'Meteor impact'], answer: 0 },
-    { month: 'October', q: 'Which meteor shower peaked in October 2025?', choices: ['Draconids', 'Leonids', 'Quadrantids'], answer: 0 },
-    { month: 'November', q: 'Which major climate summit occurred in November 2025?', choices: ['COP30', 'COP29', 'UN Ocean Summit'], answer: 0 },
-    { month: 'December', q: 'Which famous author’s 250th birthday was celebrated in December 2025?', choices: ['Charles Dickens', 'Jane Austen', 'Leo Tolstoy'], answer: 1 }
+    { q: 'Which country assumed the G20 presidency in January 2025?', choices: ['Brazil', 'South Africa', 'India'], answer: 1 },
+    { q: 'Which global astronomy awareness event took place in February 2025?', choices: ['World Space Week', 'National Astronomy Week', 'Global Star Party'], answer: 1 },
+    { q: 'What major space event occurred on 2 March 2025?', choices: ['First private Moon landing', 'Mars rover launch', 'ISS deorbit'], answer: 0 },
+    { q: 'Which meteor shower peaked in April 2025?', choices: ['Perseids', 'Geminids', 'Lyrids'], answer: 2 },
+    { q: 'Which song competition was held in May 2025?', choices: ['Eurovision Song Contest', 'American Idol Finale', 'MTV Awards'], answer: 0 },
+    { q: 'Which international sporting event took place in June 2025?', choices: ['UEFA Women’s Euro', 'Summer Olympics', 'Cricket World Cup'], answer: 0 },
+    { q: 'Which global climate event occurred in July 2025?', choices: ['Record Arctic ice melt', 'El Niño collapse', 'Antarctic heatwave'], answer: 0 },
+    { q: 'Wikimania 2025 was held in which month?', choices: ['July', 'August', 'September'], answer: 1 },
+    { q: 'What rare astronomical event occurred in September 2025?', choices: ['Total lunar eclipse', 'Solar flare blackout', 'Meteor impact'], answer: 0 },
+    { q: 'Which meteor shower peaked in October 2025?', choices: ['Draconids', 'Leonids', 'Quadrantids'], answer: 0 },
+    { q: 'Which major climate summit occurred in November 2025?', choices: ['COP30', 'COP29', 'UN Ocean Summit'], answer: 0 },
+    { q: 'Which famous author’s 250th birthday was celebrated in December 2025?', choices: ['Charles Dickens', 'Jane Austen', 'Leo Tolstoy'], answer: 1 }
   ];
 
   function enterApp() {
@@ -132,33 +133,45 @@
     usersRef.push(name);
     document.getElementById('screen1').classList.remove('active');
     document.getElementById('screen2').classList.add('active');
-    renderQuestions();
+    showQuestion();
   }
 
-  function renderQuestions() {
-    const container = document.getElementById('questions');
-    questions.forEach((q, qi) => {
-      const div = document.createElement('div');
-      div.className = 'question';
-      div.innerHTML = `<strong>${q.month}:</strong> ${q.q}`;
-      q.choices.forEach((c, ci) => {
-        const btn = document.createElement('button');
-        btn.className = 'choice';
-        btn.textContent = c;
-        btn.onclick = () => submitAnswer(qi, ci);
-        div.appendChild(btn);
-      });
-      container.appendChild(div);
+  function showQuestion() {
+    const panel = document.getElementById('questionPanel');
+    panel.innerHTML = '';
+
+    if (currentQuestionIndex >= questions.length) {
+      panel.innerHTML = '<strong>Quiz complete!</strong>';
+      return;
+    }
+
+    const q = questions[currentQuestionIndex];
+    const title = document.createElement('div');
+    title.innerHTML = `<strong>Question ${currentQuestionIndex + 1} of ${questions.length}</strong><br>${q.q}`;
+    panel.appendChild(title);
+
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.textContent = c;
+      btn.onclick = () => answerQuestion(i);
+      panel.appendChild(btn);
     });
   }
 
-  function submitAnswer(qi, ci) {
-    if (ci === questions[qi].answer) {
+  function answerQuestion(choiceIndex) {
+    answeredCount++;
+    if (choiceIndex === questions[currentQuestionIndex].answer) {
+      correctCount++;
       winnersRef.push(currentUser);
-      alert('Correct!');
-    } else {
-      alert('Incorrect');
     }
+    updateScore();
+    currentQuestionIndex++;
+    showQuestion();
+  }
+
+  function updateScore() {
+    document.getElementById('scoreDisplay').textContent = `Score: ${correctCount}/${answeredCount}`;
   }
 
   usersRef.on('value', snap => {
