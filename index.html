@@ -82,7 +82,7 @@
 <!-- SCREEN 1 -->
 <div id="screen1" class="screen active">
   <div class="dialog">
-    <h2>Welcome</h2>
+    <h2>Welcome to the Collopy Family Quiz</h2>
     <p>Enter your name to begin</p>
     <input id="username" placeholder="Your name" />
     <button onclick="enterApp()">Start Quiz</button>
@@ -137,64 +137,19 @@ const firebaseConfig = {
 
   const questions = [
       {
-          q: 'Which major UK author released the highly anticipated novel "The Fraud", a finalist for the 2025 Women\'s Prize for Fiction?',
-          choices: ['Zadie Smith', 'Hilary Mantel', 'Kate Mosse', 'Bernardine Evaristo'],
-          answer: 0 // Zadie Smith
+          q: 'What are Cecily's favourite numbers this year?',
+          choices: ['6516', '2 .. 3', '4 ...5 ', '6 ...7'],
+          answer: 3 // Zadie Smith
       },
       {
-          q: 'Which former "Doctor Who" star made their directorial debut with the 2025 British sci-fi film "The Starless Crown"?',
-          choices: ['David Tennant', 'Matt Smith', 'Jodie Whittaker', 'Peter Capaldi'],
-          answer: 2 // Jodie Whittaker
+          q: 'What does a sensible person do after a haircut?',
+          choices: ['Change clothes', 'Shower', 'Look in the mirror', 'Hange their hair in the xmas tree'],
+          answer: 3 // Jodie Whittaker
       },
       {
-          q: 'What was the outcome of the 2025 United Kingdom general election?',
-          choices: ['Labour majority', 'Conservative majority', 'Hung parliament', 'Liberal Democrat coalition'],
+          q: 'Aggregated weekly running distance at 87 Esmond Road',
+          choices: ['1km', '5km', '15km', '100m'],
           answer: 2 // Hung parliament (Note: This is a projected/potential 2025 event based on current political climate)
-      },
-      {
-          q: 'Which British city was named the 2025 UK City of Culture?',
-          choices: ['Bradford', 'Coventry', 'Southampton', 'Derry'],
-          answer: 0 // Bradford was designated for 2025
-      },
-      {
-          q: 'Which historic UK sporting event celebrated its 150th anniversary in 2025?',
-          choices: ['The Boat Race', 'The Ashes', 'Wimbledon Championships', 'FA Cup Final'],
-          answer: 2 // Wimbledon Championships (first held in 1877)
-      },
-      {
-          q: 'What major infrastructure project in London was officially completed and opened in early 2025?',
-          choices: ['The Silvertown Tunnel', 'Crossrail 2', 'HS2 London terminal', 'Thames Tideway Tunnel'],
-          answer: 0 // The Silvertown Tunnel (scheduled for 2025 completion)
-      },
-      {
-          q: 'Which British musician sparked a social media trend in 2025 with their "Midnight Memories" TikTok challenge?',
-          choices: ['Sam Fender', 'Harry Styles', 'Dua Lipa', 'Lewis Capaldi'],
-          answer: 1 // Harry Styles (hypothetical viral trend)
-      },
-      {
-          q: 'What controversial policy regarding immigration was introduced by the UK government in 2025?',
-          choices: ['Digital Border Levy', 'Skilled Worker Cap', 'Family Reunion Restrictions', 'Offshore Processing Expansion'],
-          answer: 3 // Offshore Processing Expansion (continuation of Rwanda policy discussions)
-      },
-      {
-          q: 'Which BBC television drama about a British political scandal won multiple BAFTA TV Awards in 2025?',
-          choices: ['The Post Office Scandal', 'Partygate', 'VIP Lane', 'Russian Interference'],
-          answer: 0 // The Post Office Scandal drama (Mr Bates vs The Post Office sequel/spin-off)
-      },
-      {
-          q: 'What was the name of the major cybersecurity attack that affected several UK banks and government services in 2025?',
-          choices: ['Operation Clockwork', 'Tidal Wave Attack', 'Project Sphinx', 'Crimson Ransom'],
-          answer: 1 // Tidal Wave Attack (hypothetical name for a major cyber incident)
-      },
-      {
-          q: 'Which British athlete broke a long-standing world record at the 2025 World Athletics Championships?',
-          choices: ['Keely Hodgkinson (800m)', 'Josh Kerr (1500m)', 'Dina Asher-Smith (200m)', 'Matthew Hudson-Smith (400m)'],
-          answer: 3 // Matthew Hudson-Smith (potential 400m record contender)
-      },
-      {
-          q: 'What was the theme of King Charles III\'s 2025 Christmas broadcast, which gained significant media attention?',
-          choices: ['Environmental Stewardship', 'Community Unity', 'Technological Responsibility', 'Interfaith Dialogue'],
-          answer: 0 // Environmental Stewardship (consistent with his long-term advocacy)
       }
   ];
 
@@ -286,7 +241,7 @@ const firebaseConfig = {
       winnersRef.child(u.name).remove();  // <-- REMOVE winner for inactive user
       return;
     }
-    
+
       const div = document.createElement('div');
       div.className = 'user-row';
       div.innerHTML = `<span>${u.name}</span><span>${u.score}</span>`;
