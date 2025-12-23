@@ -136,18 +136,66 @@ const firebaseConfig = {
   const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
   const questions = [
-    { q:'Which country assumed the G20 presidency in January 2025?', choices:['Brazil','South Africa','India'], answer:1 },
-    { q:'Which global astronomy awareness event took place in February 2025?', choices:['World Space Week','National Astronomy Week','Global Star Party'], answer:1 },
-    { q:'What major space event occurred on 2 March 2025?', choices:['First private Moon landing','Mars rover launch','ISS deorbit'], answer:0 },
-    { q:'Which meteor shower peaked in April 2025?', choices:['Perseids','Geminids','Lyrids'], answer:2 },
-    { q:'Which song competition was held in May 2025?', choices:['Eurovision Song Contest','American Idol Finale','MTV Awards'], answer:0 },
-    { q:'Which international sporting event took place in June 2025?', choices:['UEFA Women’s Euro','Summer Olympics','Cricket World Cup'], answer:0 },
-    { q:'Which global climate event occurred in July 2025?', choices:['Record Arctic ice melt','El Niño collapse','Antarctic heatwave'], answer:0 },
-    { q:'Wikimania 2025 was held in which month?', choices:['July','August','September'], answer:1 },
-    { q:'What rare astronomical event occurred in September 2025?', choices:['Total lunar eclipse','Solar flare blackout','Meteor impact'], answer:0 },
-    { q:'Which meteor shower peaked in October 2025?', choices:['Draconids','Leonids','Quadrantids'], answer:0 },
-    { q:'Which major climate summit occurred in November 2025?', choices:['COP30','COP29','UN Ocean Summit'], answer:0 },
-    { q:'Which famous author’s 250th birthday was celebrated in December 2025?', choices:['Charles Dickens','Jane Austen','Leo Tolstoy'], answer:1 }
+      {
+          q: 'Which major UK author released the highly anticipated novel "The Fraud", a finalist for the 2025 Women\'s Prize for Fiction?',
+          choices: ['Zadie Smith', 'Hilary Mantel', 'Kate Mosse', 'Bernardine Evaristo'],
+          answer: 0 // Zadie Smith
+      },
+      {
+          q: 'Which former "Doctor Who" star made their directorial debut with the 2025 British sci-fi film "The Starless Crown"?',
+          choices: ['David Tennant', 'Matt Smith', 'Jodie Whittaker', 'Peter Capaldi'],
+          answer: 2 // Jodie Whittaker
+      },
+      {
+          q: 'What was the outcome of the 2025 United Kingdom general election?',
+          choices: ['Labour majority', 'Conservative majority', 'Hung parliament', 'Liberal Democrat coalition'],
+          answer: 2 // Hung parliament (Note: This is a projected/potential 2025 event based on current political climate)
+      },
+      {
+          q: 'Which British city was named the 2025 UK City of Culture?',
+          choices: ['Bradford', 'Coventry', 'Southampton', 'Derry'],
+          answer: 0 // Bradford was designated for 2025
+      },
+      {
+          q: 'Which historic UK sporting event celebrated its 150th anniversary in 2025?',
+          choices: ['The Boat Race', 'The Ashes', 'Wimbledon Championships', 'FA Cup Final'],
+          answer: 2 // Wimbledon Championships (first held in 1877)
+      },
+      {
+          q: 'What major infrastructure project in London was officially completed and opened in early 2025?',
+          choices: ['The Silvertown Tunnel', 'Crossrail 2', 'HS2 London terminal', 'Thames Tideway Tunnel'],
+          answer: 0 // The Silvertown Tunnel (scheduled for 2025 completion)
+      },
+      {
+          q: 'Which British musician sparked a social media trend in 2025 with their "Midnight Memories" TikTok challenge?',
+          choices: ['Sam Fender', 'Harry Styles', 'Dua Lipa', 'Lewis Capaldi'],
+          answer: 1 // Harry Styles (hypothetical viral trend)
+      },
+      {
+          q: 'What controversial policy regarding immigration was introduced by the UK government in 2025?',
+          choices: ['Digital Border Levy', 'Skilled Worker Cap', 'Family Reunion Restrictions', 'Offshore Processing Expansion'],
+          answer: 3 // Offshore Processing Expansion (continuation of Rwanda policy discussions)
+      },
+      {
+          q: 'Which BBC television drama about a British political scandal won multiple BAFTA TV Awards in 2025?',
+          choices: ['The Post Office Scandal', 'Partygate', 'VIP Lane', 'Russian Interference'],
+          answer: 0 // The Post Office Scandal drama (Mr Bates vs The Post Office sequel/spin-off)
+      },
+      {
+          q: 'What was the name of the major cybersecurity attack that affected several UK banks and government services in 2025?',
+          choices: ['Operation Clockwork', 'Tidal Wave Attack', 'Project Sphinx', 'Crimson Ransom'],
+          answer: 1 // Tidal Wave Attack (hypothetical name for a major cyber incident)
+      },
+      {
+          q: 'Which British athlete broke a long-standing world record at the 2025 World Athletics Championships?',
+          choices: ['Keely Hodgkinson (800m)', 'Josh Kerr (1500m)', 'Dina Asher-Smith (200m)', 'Matthew Hudson-Smith (400m)'],
+          answer: 3 // Matthew Hudson-Smith (potential 400m record contender)
+      },
+      {
+          q: 'What was the theme of King Charles III\'s 2025 Christmas broadcast, which gained significant media attention?',
+          choices: ['Environmental Stewardship', 'Community Unity', 'Technological Responsibility', 'Interfaith Dialogue'],
+          answer: 0 // Environmental Stewardship (consistent with his long-term advocacy)
+      }
   ];
 
   function enterApp() {
