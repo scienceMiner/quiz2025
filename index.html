@@ -14,18 +14,23 @@
     .screen { display:none; min-height:100vh; padding:16px; }
     .active { display:block; }
 
+    /* Entry dialog */
     .dialog {
-      max-width:340px;
-      margin:80px auto;
+      max-width:320px;
+      margin:100px auto;
       background:#fff;
-      padding:24px;
-      border-radius:14px;
-      box-shadow:0 6px 16px rgba(0,0,0,.15);
+      padding:24px 20px 28px;
+      border-radius:16px;
+      box-shadow:0 6px 18px rgba(0,0,0,.15);
       text-align:center;
+      box-sizing:border-box;
     }
+    .dialog h2 { margin:0 0 8px; }
+    .dialog p { margin:0 0 16px; color:#555; }
 
     input, button {
       width:100%;
+      box-sizing:border-box;
       padding:12px;
       font-size:16px;
       margin-top:12px;
@@ -33,9 +38,10 @@
 
     button {
       border:none;
-      border-radius:10px;
+      border-radius:12px;
       background:#007bff;
       color:white;
+      font-weight:bold;
     }
 
     .panel {
@@ -49,7 +55,7 @@
       display:flex;
       justify-content:space-between;
       font-size:14px;
-      margin-top:4px;
+      margin-top:6px;
     }
 
     .score { font-weight:bold; text-align:center; margin-bottom:10px; }
@@ -77,7 +83,7 @@
 <div id="screen1" class="screen active">
   <div class="dialog">
     <h2>Welcome</h2>
-    <p>Please enter your name</p>
+    <p>Enter your name to begin</p>
     <input id="username" placeholder="Your name" />
     <button onclick="enterApp()">Start Quiz</button>
   </div>
@@ -98,7 +104,7 @@
 
   <div class="panel">
     <strong>Users With Correct Answers</strong>
-    <ul id="winnerList"></ul>
+    <div id="winnerList"></div>
   </div>
 </div>
 
@@ -127,7 +133,7 @@ const firebaseConfig = {
   let correctCount = 0;
   let hasWon = false;
 
-  const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+  const INACTIVITY_LIMIT = 5 * 60 * 1000;
 
   const questions = [
     { q:'Which country assumed the G20 presidency in January 2025?', choices:['Brazil','South Africa','India'], answer:1 },
@@ -150,7 +156,6 @@ const firebaseConfig = {
 
     currentUser = name;
     userKey = usersRef.push({ name, score:'0/0', lastActive:Date.now() }).key;
-
     usersRef.child(userKey).onDisconnect().remove();
 
     document.getElementById('screen1').classList.remove('active');
@@ -163,7 +168,7 @@ const firebaseConfig = {
   function startHeartbeat() {
     setInterval(() => {
       if (userKey) {
-        usersRef.child(userKey).update({ lastActive: Date.now(), score: `${correctCount}/${answeredCount}` });
+        usersRef.child(userKey).update({ lastActive:Date.now(), score:`${correctCount}/${answeredCount}` });
       }
     }, 30000);
   }
@@ -197,8 +202,10 @@ const firebaseConfig = {
     if (choiceIndex === questions[currentQuestionIndex].answer) {
       correctCount++;
       if (!hasWon) {
-        winnersRef.child(currentUser).set(true);
+        winnersRef.child(currentUser).set({ score:`${correctCount}/${answeredCount}` });
         hasWon = true;
+      } else {
+        winnersRef.child(currentUser).update({ score:`${correctCount}/${answeredCount}` });
       }
     }
 
@@ -209,12 +216,11 @@ const firebaseConfig = {
 
   function updateScore() {
     document.getElementById('scoreDisplay').textContent = `Score: ${correctCount}/${answeredCount}`;
-    if (userKey) usersRef.child(userKey).update({ score: `${correctCount}/${answeredCount}` });
+    if (userKey) usersRef.child(userKey).update({ score:`${correctCount}/${answeredCount}` });
   }
 
   function updateProgress() {
-    const percent = (currentQuestionIndex / questions.length) * 100;
-    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('progressBar').style.width = ((currentQuestionIndex / questions.length) * 100) + '%';
   }
 
   usersRef.on('value', snap => {
@@ -224,24 +230,29 @@ const firebaseConfig = {
 
     snap.forEach(c => {
       const u = c.val();
+      if (!u || !u.name || !u.score) return;
       if (now - u.lastActive > INACTIVITY_LIMIT) {
         usersRef.child(c.key).remove();
-      } else {
-        const div = document.createElement('div');
-        div.className = 'user-row';
-        div.innerHTML = `<span>${u.name}</span><span>${u.score}</span>`;
-        list.appendChild(div);
+        return;
       }
+      const div = document.createElement('div');
+      div.className = 'user-row';
+      div.innerHTML = `<span>${u.name}</span><span>${u.score}</span>`;
+      list.appendChild(div);
     });
   });
 
   winnersRef.on('value', snap => {
-    const ul = document.getElementById('winnerList');
-    ul.innerHTML = '';
+    const list = document.getElementById('winnerList');
+    list.innerHTML = '';
+
     snap.forEach(c => {
-      const li = document.createElement('li');
-      li.textContent = c.key;
-      ul.appendChild(li);
+      const w = c.val();
+      if (!w || !w.score) return;
+      const div = document.createElement('div');
+      div.className = 'user-row';
+      div.innerHTML = `<span>${c.key}</span><span>${w.score}</span>`;
+      list.appendChild(div);
     });
   });
 </script>
